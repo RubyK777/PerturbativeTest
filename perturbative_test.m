@@ -26,7 +26,7 @@ for s3 = 1:3
               if (delta_required(1,n_combination) == 0)
                   delta_required(1,n_combination) = Delta;  % value of Delta that let ground energy match
               end
-              if (isempty(ind_evecs) == 0) & (delta_required(2,n_combination) == 0)
+              if (isempty(ind_evecs) == 0) && (delta_required(2,n_combination) == 0)
                   delta_required(2,n_combination) = Delta;  % value of Delta that let ground state match
               end
 
@@ -35,7 +35,7 @@ for s3 = 1:3
                       delta_required(3,n_combination) = Delta;  % value of Delta that let first excited energy match
                   end
 
-                  if (size(sorted_L,2) >= 2) & (delta_required(4,n_combination) == 0)
+                  if (size(sorted_L,2) >= 2) && (delta_required(4,n_combination) == 0)
                       delta_required(4,n_combination) = Delta;   % value of Delta that let first excited state match
                   end
               end
@@ -45,12 +45,12 @@ for s3 = 1:3
                     delta_required(5,n_combination) = Delta;   % value of Delta that let all 8 energies match
                   end
 
-                  if isequal(size(sorted_L,2),size(sorted_R,2),8) & (delta_required(6,n_combination) == 0)
+                  if isequal(size(sorted_L,2),size(sorted_R,2),8) && (delta_required(6,n_combination) == 0)
                       delta_required(6,n_combination) = Delta;  % value of Delta that let all 8 states match
                   end
               end
         end
-        if ne(delta_required(5,n_combination),0) & ne(delta_required(6,n_combination),0) & (delta_required(7,n_combination) == 0) & (numel(unique(ind_evals_R)) == 0)
+        if ne(delta_required(5,n_combination),0) && ne(delta_required(6,n_combination),0) && (delta_required(7,n_combination) == 0) && (numel(unique(ind_evals_R)) == 0)
           delta_required(7,n_combination) = Delta;  % value of Delta that is too large to keep energies matching
         end
       end
