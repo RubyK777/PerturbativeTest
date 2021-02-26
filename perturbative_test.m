@@ -1,12 +1,12 @@
 %% Delta test
 
-delta_required = zeros(7,27); combinations = cell(27,1); tol = 1e-03; k = 1;
+delta_required = zeros(7,27); combinations = cell(27,1); tol = 1e-06; k = 1;
 S{1} = 'x'; S{2} = 'y'; S{3} = 'z'; n_combination = 1;   % fundamental settings where k is the number of auxiliary qubit, n_combinations is the number of combination
 
 for s1 = 1:3
 for s2 = 1:3
 for s3 = 1:3
-    for Delta = 1e5:1e5:1e10;
+    parfor Delta = 1e5:1e5:1e10;
     combinations(n_combination) = {['-' S{s1} S{s2} S{s3}]};     % terms that being tested
     [LHS,RHS] = lhs2rhs(['-' S{s1} S{s2} S{s3}],Delta,'P(3->2)CBBK');
     if isnan(RHS) == 0
