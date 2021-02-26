@@ -6,9 +6,9 @@ S{1} = 'x'; S{2} = 'y'; S{3} = 'z'; n_combination = 1;   % fundamental settings 
 for s1 = 1:3
 for s2 = 1:3
 for s3 = 1:3
-    for Delta = 1e5:1e5:1e10;
-    combinations(n_combination) = {['-' S{s1} S{s2} S{s3}]};     % terms that being tested
-    [LHS,RHS] = lhs2rhs(['-' S{s1} S{s2} S{s3}],Delta,'P(3->2)CBBK');
+    for Delta = 1e5:1e5:1e10
+    combinations(n_combination) = {[S{s1} S{s2} S{s3}]};     % terms that being tested
+    [LHS,RHS] = lhs2rhs([S{s1} S{s2} S{s3}],Delta,'P(3->2)CBBK');
     if isnan(RHS) == 0
       [V_RHS,E_RHS] = eig(RHS);
       [V_LHS,E_LHS] = eig(LHS);
