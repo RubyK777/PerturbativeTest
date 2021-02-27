@@ -1,6 +1,6 @@
 % fundamental settings for testing multiple Delta values, where k is the number of auxiliary qubits
-name_of_quadratization = 'P(3->2)DC2'; Delta_lower_bound = 1e12; Delta_increment = 1e10;
-Delta_upper_bound = 1e13;  tol = 1e-06; k = 1;
+name_of_quadratization = 'P(3->2)KKR'; Delta_lower_bound = 1e9; Delta_increment = 1e9;
+Delta_upper_bound = 1e14;  tol = 1e-03; k = 3;
 
 combinations = cell(27,1); S{1} = 'x'; S{2} = 'y'; S{3} = 'z'; n_combination = 1;  % fundamental settings for testing multiple combinations
 combined_delta_required = zeros(6,27);             % the desired Delta values for different s1s2s3 combinations
