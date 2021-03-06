@@ -1,17 +1,11 @@
-function [LHS, RHS] = lhs2rhs(operators, Delta, name_of_quadratization)
+function [LHS, RHS] = lhs2rhs(coefficient,operators,Delta, name_of_quadratization)
 % test P(3->2)-DC1, P-(3->2)DC2, P-(3->2)KKR, P(3->2)-OT, P(3->2)-CBBK, ZZZ-TI-CBBK,
 % P1B1-OT, P1B1-CBBK, PSD-OT, and PSD-CBBK
 % operators shold be in the form of 'xyz'
 %
-% e.g.    [LHS, RHS] = lhs2rhs('xyz',1e10,'P(3->2)-DC2')
-%         refers to quadratize x1*y2*z3 using P(3->2)-DC2 with Delta = 1e10
+% e.g.    [LHS, RHS] = lhs2rhs(-1,'xyz',1e10,'P(3->2)-DC2')
+%         refers to quadratize -x1*y2*z3 using P(3->2)-DC2 with Delta = 1e10
 
-    if operators(1) == '-'
-      operators = operators(2:end);
-      coefficient = -1;
-    else
-      coefficient = 1;
-    end
     n = length(operators);
     S = cell(n);
     x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1];
@@ -102,8 +96,8 @@ function [LHS, RHS] = lhs2rhs(operators, Delta, name_of_quadratization)
         alpha_ss = (1/6)*(Delta)^(1/3);
         alpha_sx = (-1/6)*(Delta)^(2/3);
         alpha_zz = (-1/24)*Delta;
-%       have not add coefficient
-        LHS = S{1}*S{2}*S{3};
+
+        LHS = coefficient*S{1}*S{2}*S{3};
         RHS = alpha*eye(2^(n+3)) + alpha_ss*(S{1}^2 + S{2}^2 + S{3}^2) + alpha_sx*(S{1}*xa1 + S{2}*xa2 + S{3}*xa3) + alpha_zz*(za1*za2 + za1*za3 + za2*za3);
 
    elseif strcmp(name_of_quadratization, 'ZZZ-TI-CBBK')
