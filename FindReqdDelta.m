@@ -72,13 +72,14 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
       end
     end
   end
-  UpdateOutput(tol,combinations,name_of_quadratization,test_times);
-  end       % use endwhile in Octave
+  UpdateOutput(tol,combinations,delta_required,name_of_quadratization,test_times);
+  endwhile       % use end in MATLAB
   n_combination = n_combination + 1;
   end
   end
   end
-  delta_required(delta_required == 0) = nan;
+  delta_required(delta_required == 0) = maxDelta;
+  UpdateOutput(tol,combinations,delta_required,name_of_quadratization,test_times);
 
 elseif length(input_choice) == 3        % test a single term
   delta_required = zeros(7,27); combinations = cell(1,27);
@@ -143,9 +144,10 @@ elseif length(input_choice) == 3        % test a single term
       end
     end
   end
-  UpdateOutput(tol,combinations,name_of_quadratization,test_times);
-  end       %   use endwhile in Octave
-  delta_required(delta_required == 0) = nan;
+  UpdateOutput(tol,combinations,delta_required,name_of_quadratization,test_times);
+  endwhile       %   use end in MATLAB
+  delta_required(delta_required == 0) = maxDelta;
+  UpdateOutput(tol,combinations,delta_required,name_of_quadratization,test_times);
 
 else
   disp("Invalid Input");
@@ -154,7 +156,7 @@ end
 end
 
 
-function UpdateOutput(tol,combinations,name_of_quadratization,test_times)      % Update the output text file
+function UpdateOutput(tol,combinations,delta_required,name_of_quadratization,test_times)      % Update the output text file
 FileName = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times));
 RowNames_1 = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(1));      % gives the name of row as 'P(3->2)DC2_1e-3_1'
 RowNames_2 = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(2));
