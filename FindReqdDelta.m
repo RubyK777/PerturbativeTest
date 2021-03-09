@@ -1,4 +1,4 @@
-function delta_required = FindReqdDelta(tol,coefficient,input_choice,minDelta,maxDelta,name_of_quadratization)
+function delta_required = FindReqdDelta(tol,coefficient,input_choice,minDelta,maxDelta,name_of_quadratization,test_times)
 % This function takes in 6 arguments and gives a double matrix as output.
 % It finds the Delta values that meet requriements stated below, in the range provide, and prints the output to a text file.
 %
@@ -72,13 +72,13 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
       end
     end
   end
+  UpdateOutput(tol,combinations,name_of_quadratization,test_times);
   end       % use endwhile in Octave
   n_combination = n_combination + 1;
   end
   end
   end
   delta_required(delta_required == 0) = nan;
-  UpdateOutput(tol,combinations,name_of_quadratization);
 
 elseif length(input_choice) == 3        % test a single term
   delta_required = zeros(7,27); combinations = cell(1,27);
@@ -143,9 +143,9 @@ elseif length(input_choice) == 3        % test a single term
       end
     end
   end
+  UpdateOutput(tol,combinations,name_of_quadratization,test_times);
   end       %   use endwhile in Octave
   delta_required(delta_required == 0) = nan;
-  UpdateOutput(tol,combinations,name_of_quadratization);
 
 else
   disp("Invalid Input");
@@ -154,25 +154,13 @@ end
 end
 
 
-function UpdateOutput(tol,combinations,name_of_quadratization)      % Update the output text file
-
-if exist('Required_Delta.txt','file') == 0    % if the file doesn't exist, we will create a new one
+function UpdateOutput(tol,combinations,name_of_quadratization,test_times)      % Update the output text file
+FileName = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times));
 RowNames_1 = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(1));      % gives the name of row as 'P(3->2)DC2_1e-3_1'
 RowNames_2 = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(2));
 T = table([{'combinations'};{RowNames_1};{RowNames_2}],[combinations;num2cell(delta_required(1,:));num2cell(delta_required(2,:))],cell(1,size(T,2)));
 T = table2array(T);
-
-else      % need to be further improved so that we can get it updated during executing
-InputT = readtable('Required_Delta.txt','ReadVariableNames',false);
-InputT = table2array(InputT)';
-RowNames_1 = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(1));      % gives the name of row as 'P(3->2)DC2_1e-3_1'
-RowNames_2 = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(2));
-T = table([{'combinations'};{RowNames_1};{RowNames_2}],[combinations;num2cell(delta_required(1,:));num2cell(delta_required(2,:))]);
-T = table2array(T);
-T = [InputT;T;cell(1,size(T,2))];
-
-end
 T = array2table(T');
-writetable(T,'Required_Delta.txt','Delimiter','\t','WriteVariableNames',false);
+writetable(T,FileName,'Delimiter','\t','WriteVariableNames',false);
 
 end
