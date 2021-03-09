@@ -160,7 +160,7 @@ function UpdateOutput(tol,combinations,delta_required,name_of_quadratization,tes
 FileName = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times));
 RowNames_1 = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(1));      % gives the name of row as 'P(3->2)DC2_1e-3_1'
 RowNames_2 = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(2));
-T = table([{'combinations'};{RowNames_1};{RowNames_2}],[combinations;num2cell(delta_required(1,:));num2cell(delta_required(2,:))],cell(1,size(T,2)));
+T = table([{'combinations'};{RowNames_1};{RowNames_2}],[combinations;num2cell(delta_required(1,:));num2cell(delta_required(2,:))]);
 T = table2array(T);
 T = array2table(T');
 writetable(T,FileName,'Delimiter','\t','WriteVariableNames',false);
