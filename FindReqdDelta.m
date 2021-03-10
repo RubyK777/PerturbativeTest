@@ -2,8 +2,8 @@ function delta_required = FindReqdDelta(tol,coefficient,input_choice,minDelta,ma
 % This function takes in 6 arguments and gives a double matrix as output.
 % It finds the Delta values that meet requriements stated below, in the range provide, and prints the output to a text file.
 %
-% e.g.    delta_required = FindReqdDelta(1e-3,-1,'xyz',1e10,1e13,'P(3->2)DC2')
-%         refers to find the Delta required within 1e10-1e13 for -xyz using DC2
+% e.g.    delta_required = FindReqdDelta(1e-3,-1,'xyz',1e10,1e13,'P(3->2)DC2',1)
+%         refers to find the Delta required within 1e10-1e13 for -xyz using DC2 the 1st time
 
 if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % test all 27 cubic terms
   delta_required = zeros(7,27); combinations = cell(1,27);
@@ -157,6 +157,6 @@ end
 
 
 function UpdateOutput(tol,combinations,delta_required,name_of_quadratization,test_times)      % Update the output text file
-FileName = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times));
-dlmwrite(FileName,delta_required','Delimiter','\t','nextline','\n');
+FileName = strcat(name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+dlmwrite(FileName,delta_required','delimiter','\t','newline','\n');
 end
