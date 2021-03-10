@@ -1,4 +1,4 @@
-function delta_required = FindReqdDelta(tol,coefficient,decimal_palce,input_choice,minDelta,maxDelta,name_of_quadratization,test_times)
+function FindReqdDelta(tol,coefficient,decimal_place,input_choice,minDelta,maxDelta,name_of_quadratization,test_times)
 % This function takes in 6 arguments and gives a double matrix as output.
 % It finds the Delta values that meet requriements stated below, in the range provide, and prints the output to a text file.
 %
@@ -78,19 +78,18 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
       end
     end
   end
-  if (Delta/(floor(log10(Delta))) == 5) | (Delta/(floor(log10(Delta))) == 10)    % update the output file and the checkpoint
+  if (Delta/(floor(log10(Delta))) == 5) || (Delta/(floor(log10(Delta))) == 10)    % update the output file and the checkpoint
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
   dlmwrite(FileName,Delta,'-append');     % largest Delta tested
-  checkpoint = Delta;
   end
-  endwhile       % use end in MATLAB
+  end      % use end in MATLAB
   n_combination = n_combination + 1;
   end
   end
   end
   delta_required(delta_required == 0) = 308;
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');
-  dlmwrite(FileName,minDelta,maxDelta,'-append','delimiter','\t');     % range of Delta tested
+  dlmwrite(FileName,minDelta,'-append','delimiter','\t');     % range of Delta tested
 
 elseif length(input_choice) == 3        % test a single term
   delta_required = zeros(7,1); operators = input_choice; n_combination = 1;   % to match the description in 'all_cubics' case
@@ -103,7 +102,6 @@ elseif length(input_choice) == 3        % test a single term
   end
 
   Delta = minDelta;
-  checkpoint = Delta;
   while Delta <= maxDelta
   Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
   [LHS,RHS] = lhs2rhs(coefficient,operators,Delta,name_of_quadratization);
@@ -156,17 +154,16 @@ elseif length(input_choice) == 3        % test a single term
       end
     end
   end
-  if (Delta/(floor(log10(Delta))) == 5) | (Delta/(floor(log10(Delta))) == 10)    % update the output file and the checkpoint
+  if (Delta/(floor(log10(Delta))) == 5) || (Delta/(floor(log10(Delta))) == 10)    % update the output file and the checkpoint
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
   dlmwrite(FileName,Delta,'-append');     % largest Delta tested
-  save -append FileName input_choice;
-  checkpoint = Delta;
+  dlmwrite(FileName,input_choice,'-append');     % input choice
   end
-  endwhile       %   use end in MATLAB
+  end      %   use end in MATLAB
   delta_required(delta_required == 0) = 308;
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');
-  dlmwrite(FileName,minDelta,maxDelta,'-append','delimiter','\t');     % range of Delta tested
-  save -append FileName input_choice;
+  dlmwrite(FileName,maxDelta,'-append','delimiter','\t');     % range of Delta tested
+  dlmwrite(FileName,input_choice,'-append');     % input choice
 
 else
   disp("Invalid Input");
