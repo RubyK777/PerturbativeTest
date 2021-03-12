@@ -78,7 +78,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
       end
     end
   end
-  if (Delta/(floor(log10(Delta))) == 5) || (Delta/(floor(log10(Delta))) == 10)    % update the output file and the checkpoint
+  if (Delta/(floor(log10(Delta))) == 5) || (Delta/(floor(log10(Delta))) == 1)    % update the output file and the checkpoint
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
   dlmwrite(FileName,Delta,'-append');     % largest Delta tested
   end
@@ -89,7 +89,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   end
   delta_required(delta_required == 0) = 308;
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');
-  dlmwrite(FileName,minDelta,'-append','delimiter','\t');     % range of Delta tested
+  dlmwrite(FileName,maxDelta,'-append','delimiter','\t');     % range of Delta tested
 
 elseif length(input_choice) == 3        % test a single term
   delta_required = zeros(7,1); operators = input_choice; n_combination = 1;   % to match the description in 'all_cubics' case
@@ -154,7 +154,7 @@ elseif length(input_choice) == 3        % test a single term
       end
     end
   end
-  if (Delta/(floor(log10(Delta))) == 5) || (Delta/(floor(log10(Delta))) == 10)    % update the output file and the checkpoint
+  if (Delta/(floor(log10(Delta))) == 5) || (Delta/(floor(log10(Delta))) == 1)    % update the output file and the checkpoint
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
   dlmwrite(FileName,Delta,'-append');     % largest Delta tested
   dlmwrite(FileName,input_choice,'-append');     % input choice
