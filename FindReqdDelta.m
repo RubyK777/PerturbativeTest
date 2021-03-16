@@ -26,6 +26,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   end
 
   Delta = minDelta;
+  checkpoint = minDelta;
   while Delta <= maxDelta
   Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
   [LHS,RHS] = lhs2rhs(coefficient,operators,Delta,name_of_quadratization);
@@ -78,9 +79,10 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
       end
     end
   end
-  if (Delta/(floor(log10(Delta))) == 5) || (Delta/(floor(log10(Delta))) == 1)    % update the output file and the checkpoint
+  if (Delta - checkpoint) >= 10^(floor(log10(Delta)))    % update the output file and the checkpoint
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
   dlmwrite(FileName,Delta,'-append');     % largest Delta tested
+  checkpoint = Delta;
   end
   end      % use end in MATLAB
   n_combination = n_combination + 1;
@@ -102,6 +104,7 @@ elseif length(input_choice) == 3        % test a single term
   end
 
   Delta = minDelta;
+  checkpoint = minDelta;
   while Delta <= maxDelta
   Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
   [LHS,RHS] = lhs2rhs(coefficient,operators,Delta,name_of_quadratization);
@@ -154,10 +157,11 @@ elseif length(input_choice) == 3        % test a single term
       end
     end
   end
-  if (Delta/(floor(log10(Delta))) == 5) || (Delta/(floor(log10(Delta))) == 1)    % update the output file and the checkpoint
+  if (Delta - checkpoint) >= 10^(floor(log10(Delta)))        % update the output file and the checkpoint
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
   dlmwrite(FileName,Delta,'-append');     % largest Delta tested
   dlmwrite(FileName,input_choice,'-append');     % input choice
+  checkpoint = Delta;
   end
   end      %   use end in MATLAB
   delta_required(delta_required == 0) = 308;
