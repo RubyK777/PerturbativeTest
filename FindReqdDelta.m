@@ -98,14 +98,14 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
       end
     end
   end
-  ind = find(delta_required(:,n_combination) == 0);
-  delta_required(ind,n_combination) = Inf;
   if (Delta - checkpoint) >= 10^(floor(log10(Delta))-(decimal_place - 2))    % update the output file and the checkpoint
       dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
       dlmwrite(FileName,Delta,'-append');     % largest Delta tested
       checkpoint = Delta;
   end
   end      % use end in MATLAB / endwhile in Octave
+  ind = find(delta_required(:,n_combination) == 0);
+  delta_required(ind,n_combination) = Inf;
   n_combination = n_combination + 1;
   end
   end
@@ -209,14 +209,14 @@ elseif strcmp(input_choice,'all_quartics')
       end
     end
   end
-  ind = find(delta_required(:,n_combination) == 0);
-  delta_required(ind,n_combination) = Inf;
   if (Delta - checkpoint) >= 10^(floor(log10(Delta))-(decimal_place - 2))    % update the output file and the checkpoint
       dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
       dlmwrite(FileName,Delta,'-append');     % largest Delta tested
       checkpoint = Delta;
   end
   end      % use end in MATLAB / endwhile in Octave
+  ind = find(delta_required(:,n_combination) == 0);
+  delta_required(ind,n_combination) = Inf;
   n_combination = n_combination + 1;
   end
   end
@@ -309,8 +309,6 @@ elseif length(input_choice) == 3        % test a single term
       end
     end
   end
-  ind = find(delta_required(:,n_combination) == 0);
-  delta_required(ind,n_combination) = Inf;
   if (Delta - checkpoint) >= 10^(floor(log10(Delta))-(decimal_place - 2))        % update the output file and the checkpoint
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
   dlmwrite(FileName,Delta,'-append');     % largest Delta tested
@@ -318,6 +316,8 @@ elseif length(input_choice) == 3        % test a single term
   checkpoint = Delta;
   end
   end      % use end in MATLAB / endwhile in Octave
+  ind = find(delta_required(:,n_combination) == 0);
+  delta_required(ind,n_combination) = Inf;
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');
   dlmwrite(FileName,maxDelta,'-append','delimiter','\t');     % range of Delta tested
   dlmwrite(FileName,input_choice,'-append');     % input choice
@@ -331,35 +331,90 @@ end
 function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_quadratization)     % known from Book About Quadratization
 % need to be updated whenever lhs2rhs.m gets updated
     x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1];
+    n = number_of_logical;
 
     if strcmp(name_of_quadratization, 'P(3->2)-DC2') || strcmp(name_of_quadratization, 'P(3->2)DC2')
         number_of_auxiliary = 1;
-        xa = kron(eye(8),x); za = kron(eye(8),z); I = eye(16);
+        xa = kron(eye(8),x); za = kron(eye(8),z); I = eye(2^4);
         NeededM = cell(4,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
         NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
 
     elseif strcmp(name_of_quadratization, 'P(3->2)-KKR') || strcmp(name_of_quadratization, 'P(3->2)KKR')
         number_of_auxiliary = 3;
+        xa1 = kron(kron(eye(8),x),eye(4)); xa2 = kron(kron(eye(16),x),eye(2)); xa3 = kron(eye(32),x);
+        za1 = kron(kron(eye(8),z),eye(4)); za2 = kron(kron(eye(16),z),eye(2)); za3 = kron(eye(32),z);
+        I = eye(2^6);
+        NeededM = cell(8,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM{1} = xa1; NeededM{2} = xa2; NeededM{3} = xa3;
+        NeededM{4} = za1; NeededM{5} = za2; NeededM{6} = za3; NeededM{7} = I;
+
     elseif strcmp(name_of_quadratization, 'P(3->2)KKR-A') % no coefficient needed
         number_of_auxiliary = 3;
+        xa1 = kron(kron(eye(8),x),eye(4)); xa2 = kron(kron(eye(16),x),eye(2)); xa3 = kron(eye(32),x);
+        za1 = kron(kron(eye(8),z),eye(4)); za2 = kron(kron(eye(16),z),eye(2)); za3 = kron(eye(32),z);
+        I = eye(2^6);
+        NeededM = cell(8,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM{1} = xa1; NeededM{2} = xa2; NeededM{3} = xa3;
+        NeededM{4} = za1; NeededM{5} = za2; NeededM{6} = za3; NeededM{7} = I;
+
     elseif strcmp(name_of_quadratization, 'P(3->2)-DC1') || strcmp(name_of_quadratization, 'P(3->2)DC1')
         number_of_auxiliary = 3;
+        xa1 = kron(kron(eye(8),x),eye(4)); xa2 = kron(kron(eye(16),x),eye(2)); xa3 = kron(eye(32),x);
+        za1 = kron(kron(eye(8),z),eye(4)); za2 = kron(kron(eye(16),z),eye(2)); za3 = kron(eye(32),z);
+        I = eye(2^6);
+        NeededM = cell(8,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM{1} = xa1; NeededM{2} = xa2; NeededM{3} = xa3;
+        NeededM{4} = za1; NeededM{5} = za2; NeededM{6} = za3; NeededM{7} = I;
+
    elseif strcmp(name_of_quadratization, 'ZZZ-TI-CBBK')
         number_of_auxiliary = 1;
+        xa = kron(eye(8),x); za = kron(eye(8),z); I = eye(2^4);
+        NeededM = cell(4,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
+
     elseif strcmp(name_of_quadratization, 'PSD-CBBK')
         number_of_auxiliary = 1;
+        xa = kron(eye(2^n),x); za = kron(eye(2^n),z); I = eye(2^(n+1));
+        NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
+
     elseif strcmp(name_of_quadratization, 'PSD-OT')
         number_of_auxiliary = 1;
+        xa = kron(eye(2^n),x); za = kron(eye(2^n),z); I = eye(2^(n+1));
+        NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
+
     elseif strcmp(name_of_quadratization, 'P(3->2)CBBK') || strcmp(name_of_quadratization, 'P(3->2)-CBBK')
          number_of_auxiliary = 1;
+         za = kron(eye(8),z); xa = kron(eye(8),x); I = eye(16);
+         NeededM = cell(4,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+         NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
+
     elseif strcmp(name_of_quadratization, 'P(3->2)-OT') || strcmp(name_of_quadratization, 'P(3->2)OT')
         number_of_auxiliary = 1;
+        xa = kron(eye(8),x); za = kron(eye(8),z); I = eye(16);
+        NeededM = cell(4,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
+
     elseif strcmp(name_of_quadratization, 'P1B1-CBBK')
         number_of_auxiliary = 1;
+        xa = kron(eye(2^n),x); za = kron(eye(2^n),z); I = eye(2^(n+1));
+        NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
+
     elseif strcmp(name_of_quadratization, 'P1B1-OT')
         number_of_auxiliary = 1;
+        xa = kron(eye(2^n),x); za = kron(eye(2^n),z); I = eye(2^(n+1));
+        NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
+
     elseif strcmp(name_of_quadratization, 'PSD-CN')
         number_of_auxiliary = 2;
+        za_11 = kron(kron(eye(2^(n+0)),z),eye(2)); xa_11 = kron(kron(eye(2^(n+0)),x),eye(2));
+        za_1 = kron(kron(eye(2^(n+1)),z),eye(1)); I = eye(2^(n+2));
+
+        NeededM = cell(7,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM{1} = za_11; NeededM{2} = xa_11; NeededM{3} = za_1; NeededM{4} = I;
     else
         disp('cannot find this method');
         number_of_auxiliary = nan;
@@ -369,6 +424,7 @@ end
 function index = UniqueRows(A)        % This MATLAB function provides a faster version of MATLAB's unique rows method (i.e. 'unique(points,''rows'')')
 % [index] = UniqueRows(A); % equivalent is '[~,ind]=unique(A,'rows');'
 % A_Unique = A(sort(ind),:);
+% faster unique function (https://www.mathworks.com/matlabcentral/fileexchange/77329-fast-unique-rows-method-with-unit-and-performance-tests)
 
 [A_sorted,idx1] = sortrows(A);
 k = find([true; any(diff(A_sorted,1,1),2); true]);
