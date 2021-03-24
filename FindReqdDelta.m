@@ -10,9 +10,9 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   Op{1} = 'x'; Op{2} = 'y'; Op{3} = 'z';   % Op{:} is the array of operators
 
   if coefficient == -1
-  FileName = strcat('negative','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+  FileName = strcat(input_choice,'_','negative','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
   else
-  FileName = strcat('positive','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+  FileName = strcat(input_choice,'_','positive','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
   end
 
   for s1 = 1:3
@@ -21,30 +21,34 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   operators = strcat(Op{s1},Op{s2},Op{s3});
 
   % calculate S1,S2,S3 outside of the function lhs2rhs
-    x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1]; S = cell(length(operators));
-    [m,NeededM] = GetAuxNum(size(operators),name_of_quadratization);                %  m is the number of auxiliary qubits nad A is the array of auxiliary operators
-    for ind = 1:length(operators)
+    x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1];
+    n = length(operators);
+    S = cell(n);
+    [m,NeededM] = GetAuxNum(size(operators,2),name_of_quadratization);                %  m is the number of auxiliary qubits nad A is the array of auxiliary operators
+    for ind = 1:n
         if operators(ind) == 'x'
-            S{ind} = kron(kron(eye(2^(ind-1)),x),eye(2^(length(operators)+m-ind)));
+            S{ind} = kron(kron(eye(2^(ind-1)),x),eye(2^(n+m-ind)));
         elseif operators(ind) == 'y'
-            S{ind} = kron(kron(eye(2^(ind-1)),y),eye(2^(length(operators)+m-ind)));
+            S{ind} = kron(kron(eye(2^(ind-1)),y),eye(2^(n+m-ind)));
         elseif operators(ind) == 'z'
-            S{ind} = kron(kron(eye(2^(ind-1)),z),eye(2^(length(operators)+m-ind)));
+            S{ind} = kron(kron(eye(2^(ind-1)),z),eye(2^(n+m-ind)));
         end
     end
   LHS = coefficient*S{1}*S{2}*S{3};
-  NeededM{end} = LHS;
+  NeededM{end} = LHS;              % save LHS in the last cell of NeededM
   Delta = minDelta;
   checkpoint = minDelta;
   while Delta <= maxDelta
   Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
-  [LHS,RHS] = lhs2rhs(coefficient,S,NeededM,Delta,name_of_quadratization);
+  [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
-    m = log2(size(RHS,2)) - length(operators);             % the number of auxiliary qubits
+    m = log2(size(RHS,2)) - n;             % the number of auxiliary qubits
     [V_RHS,E_RHS] = eig(RHS);
     [V_LHS,E_LHS] = eig(LHS);
-    [E_RHS,index] = sort(diag(E_RHS)); V_RHS = V_RHS(:,index);
-    [E_LHS,index] = sort(diag(E_LHS)); V_LHS = V_LHS(:,index);
+    [E_RHS,index] = sort(diag(E_RHS));
+    V_RHS = V_RHS(:,index);
+    [E_LHS,index] = sort(diag(E_LHS));
+    V_LHS = V_LHS(:,index);
     [ind_evals_L, ind_evals_R] = find( abs(E_RHS'-E_LHS) < tol );              % indices of LHS and RHS where eigenvalues match within tol
     if isempty(ind_evals_L) == 0        % matching eigenvalues exist
       L = V_LHS(:,ind_evals_L);                                                   % L = LHS eigenvectors for eigenvalues matching RHS
@@ -79,7 +83,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
               end
           end
 
-          if (numel(unique(ind_evals_R)) == 8)
+          if (numel(unique(ind_evals_R)) == 2^n)
               if (delta_required(5,n_combination) == 0)
                 delta_required(5,n_combination) = floor(log10(Delta));   % value of Delta that let all 8 energies match
               end
@@ -94,40 +98,154 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
       end
     end
   end
+  ind = find(delta_required(:,n_combination) == 0);
+  delta_required(ind,n_combination) = Inf;
   if (Delta - checkpoint) >= 10^(floor(log10(Delta))-(decimal_place - 2))    % update the output file and the checkpoint
       dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
       dlmwrite(FileName,Delta,'-append');     % largest Delta tested
       checkpoint = Delta;
   end
-  end      % use end in MATLAB
+  end      % use end in MATLAB / endwhile in Octave
   n_combination = n_combination + 1;
   end
   end
   end
-  delta_required(delta_required == 0) = 308;
+  dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');
+  dlmwrite(FileName,maxDelta,'-append','delimiter','\t');     % range of Delta tested
+
+elseif strcmp(input_choice,'all_quartics')
+  delta_required = zeros(7,81); n_combination = 1;
+  Op{1} = 'x'; Op{2} = 'y'; Op{3} = 'z';   % Op{:} is the array of operators
+
+  if coefficient == -1
+  FileName = strcat(input_choice,'_','negative','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+  else
+  FileName = strcat(input_choice,'_','positive','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+  end
+
+  for s1 = 1:3
+  for s2 = 1:3
+  for s3 = 1:3
+  for s4 = 1:3
+  operators = strcat(Op{s1},Op{s2},Op{s3},Op{s4});
+
+  % calculate S1,S2,S3 outside of the function lhs2rhs
+    x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1];
+    n = length(operators);
+    S = cell(n);
+    [m,NeededM] = GetAuxNum(size(operators,2),name_of_quadratization);                %  m is the number of auxiliary qubits nad A is the array of auxiliary operators
+    for ind = 1:n
+        if operators(ind) == 'x'
+            S{ind} = kron(kron(eye(2^(ind-1)),x),eye(2^(n+m-ind)));
+        elseif operators(ind) == 'y'
+            S{ind} = kron(kron(eye(2^(ind-1)),y),eye(2^(n+m-ind)));
+        elseif operators(ind) == 'z'
+            S{ind} = kron(kron(eye(2^(ind-1)),z),eye(2^(n+m-ind)));
+        end
+    end
+  A = S{1}*S{2};
+  B = S{3}*S{4};
+  LHS = A*B;
+  NeededM{end - 2} = A;
+  NeededM{end - 1} = B;
+  NeededM{end} = LHS;              % save LHS in the last cell of NeededM
+  Delta = minDelta;
+  checkpoint = minDelta;
+  while Delta <= maxDelta
+  Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
+  [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
+  if isnan(RHS) == 0
+    m = log2(size(RHS,2)) - n;             % the number of auxiliary qubits
+    [V_RHS,E_RHS] = eig(RHS);
+    [V_LHS,E_LHS] = eig(LHS);
+    [E_RHS,index] = sort(diag(E_RHS)); V_RHS = V_RHS(:,index);
+    [E_LHS,index] = sort(diag(E_LHS)); V_LHS = V_LHS(:,index);
+    [ind_evals_L, ind_evals_R] = find( abs(E_RHS'-E_LHS) < tol );              % indices of LHS and RHS where eigenvalues match within tol
+    if isempty(ind_evals_L) == 0        % matching eigenvalues exist
+      L = V_LHS(:,ind_evals_L);                                                   % L = LHS eigenvectors for eigenvalues matching RHS
+      R = V_RHS(:,ind_evals_R);
+      ind_evecs = find( sqrt(sum( (abs(L)-abs(R)).^2 ) ) < tol);
+      if isempty(ind_evecs) == 0        % matching eigenvectors exist
+        L = L(:,ind_evecs);
+        % [~,index] = unique(L','rows','first');
+        [index] = UniqueRows(L');                                               % faster unique function
+        sorted_L = L(:,sort(index));                                            % remove repeated eigenvectors while maintaining the order
+        R = R(:,ind_evecs);
+        sorted_R = R(:,sort(index));
+      else
+        sorted_L = [];
+        sorted_R = [];
+      end
+      if (sum( abs(E_LHS(1:2^m) - E_RHS(1)) < tol ) == 2^m)
+          if (delta_required(1,n_combination) == 0)
+              delta_required(1,n_combination) = floor(log10(Delta));  % value of Delta that let ground energy match
+          end
+          if (isempty(ind_evecs) == 0) && (delta_required(2,n_combination) == 0)
+              delta_required(2,n_combination) = floor(log10(Delta));  % value of Delta that let ground state match
+          end
+
+          if (sum( abs(E_LHS((2^m + 1):2^(m+1)) - E_RHS(2)) < tol ) == 2^m)
+              if (delta_required(3,n_combination) == 0)
+                  delta_required(3,n_combination) = floor(log10(Delta));  % value of Delta that let first excited energy match
+              end
+
+              if (size(sorted_L,2) >= 2) && (delta_required(4,n_combination) == 0)
+                  delta_required(4,n_combination) = floor(log10(Delta));   % value of Delta that let first excited state match
+              end
+          end
+
+          if (numel(unique(ind_evals_R)) == 2^n)
+              if (delta_required(5,n_combination) == 0)
+                delta_required(5,n_combination) = floor(log10(Delta));   % value of Delta that let all 16 energies match
+              end
+
+              if isequal(size(sorted_L,2),size(sorted_R,2),8) && (delta_required(6,n_combination) == 0)
+                  delta_required(6,n_combination) = floor(log10(Delta));  % value of Delta that let all 8 states match
+              end
+          end
+      end
+      if ne(delta_required(5,n_combination),0) && (delta_required(7,n_combination) == 0) && (numel(unique(ind_evals_R)) == 0)
+          delta_required(7,n_combination) = floor(log10(Delta));  % value of Delta that is too large to keep energies matching
+      end
+    end
+  end
+  ind = find(delta_required(:,n_combination) == 0);
+  delta_required(ind,n_combination) = Inf;
+  if (Delta - checkpoint) >= 10^(floor(log10(Delta))-(decimal_place - 2))    % update the output file and the checkpoint
+      dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
+      dlmwrite(FileName,Delta,'-append');     % largest Delta tested
+      checkpoint = Delta;
+  end
+  end      % use end in MATLAB / endwhile in Octave
+  n_combination = n_combination + 1;
+  end
+  end
+  end
+  end
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');
   dlmwrite(FileName,maxDelta,'-append','delimiter','\t');     % range of Delta tested
 
 elseif length(input_choice) == 3        % test a single term
   delta_required = zeros(7,1); operators = input_choice; n_combination = 1;   % to match the description in 'all_cubics' case
 
-  if coefficient == -1     % set the name of the output file
-    FileName = strcat('negative','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
-    input_choice = strcat('-',input_choice);
+  if coefficient == -1
+  FileName = strcat(input_choice,'_','negative','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
   else
-    FileName = strcat('positive','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+  FileName = strcat(input_choice,'_','positive','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
   end
 
   % calculate S1,S2,S3 outside of the function lhs2rhs
-    x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1]; S = cell(length(operators));
-    [m,NeededM] = GetAuxNum(size(operators),name_of_quadratization);                %  m is the number of auxiliary qubits nad A is the array of auxiliary operators
-    for ind = 1:length(operators)
+    x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1];
+    n = length(operators);
+    S = cell(n);
+    [m,NeededM] = GetAuxNum(size(operators,2),name_of_quadratization);                %  m is the number of auxiliary qubits nad A is the array of auxiliary operators
+    for ind = 1:n
         if operators(ind) == 'x'
-            S{ind} = kron(kron(eye(2^(ind-1)),x),eye(2^(length(operators)+m-ind)));
+            S{ind} = kron(kron(eye(2^(ind-1)),x),eye(2^(n+m-ind)));
         elseif operators(ind) == 'y'
-            S{ind} = kron(kron(eye(2^(ind-1)),y),eye(2^(length(operators)+m-ind)));
+            S{ind} = kron(kron(eye(2^(ind-1)),y),eye(2^(n+m-ind)));
         elseif operators(ind) == 'z'
-            S{ind} = kron(kron(eye(2^(ind-1)),z),eye(2^(length(operators)+m-ind)));
+            S{ind} = kron(kron(eye(2^(ind-1)),z),eye(2^(n+m-ind)));
         end
     end
   LHS = coefficient*S{1}*S{2}*S{3};
@@ -136,7 +254,7 @@ elseif length(input_choice) == 3        % test a single term
   checkpoint = minDelta;
   while Delta <= maxDelta
   Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
-  [LHS,RHS] = lhs2rhs(coefficient,S,NeededM,Delta,name_of_quadratization);
+  [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
     [V_RHS,E_RHS] = eig(RHS);
     [V_LHS,E_LHS] = eig(LHS);
@@ -176,7 +294,7 @@ elseif length(input_choice) == 3        % test a single term
               end
           end
 
-          if (numel(unique(ind_evals_R)) == 8)
+          if (numel(unique(ind_evals_R)) == 2^n)
               if (delta_required(5,n_combination) == 0)
                 delta_required(5,n_combination) = floor(log10(Delta));   % value of Delta that let all 8 energies match
               end
@@ -185,20 +303,21 @@ elseif length(input_choice) == 3        % test a single term
                   delta_required(6,n_combination) = floor(log10(Delta));  % value of Delta that let all 8 states match
               end
           end
-        end
+      end
       if ne(delta_required(5,n_combination),0) && (delta_required(7,n_combination) == 0) && (numel(unique(ind_evals_R)) == 0)
         delta_required(7,n_combination) = floor(log10(Delta));  % value of Delta that is too large to keep energies matching
       end
     end
   end
+  ind = find(delta_required(:,n_combination) == 0);
+  delta_required(ind,n_combination) = Inf;
   if (Delta - checkpoint) >= 10^(floor(log10(Delta))-(decimal_place - 2))        % update the output file and the checkpoint
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
   dlmwrite(FileName,Delta,'-append');     % largest Delta tested
   dlmwrite(FileName,input_choice,'-append');     % input choice
   checkpoint = Delta;
   end
-  end      %   use end in MATLAB
-  delta_required(delta_required == 0) = 308;
+  end      % use end in MATLAB / endwhile in Octave
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');
   dlmwrite(FileName,maxDelta,'-append','delimiter','\t');     % range of Delta tested
   dlmwrite(FileName,input_choice,'-append');     % input choice
