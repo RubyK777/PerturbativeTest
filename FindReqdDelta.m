@@ -1,19 +1,38 @@
-function FindReqdDelta(tol,coefficient,decimal_place,input_choice,minDelta,maxDelta,name_of_quadratization,test_times)
-% This function takes in 6 arguments and gives a double matrix as output.
-% It finds the Delta values that meet requriements stated below, in the range provide, and prints the output to a text file.
+function FindReqdDelta(tol,coefficient,decimal_place,input_choice,minDelta,maxDelta,number_of_eigenvalues,name_of_quadratization,test_times)
+% This function takes in 9 arguments and gives a double matrix as output.
+% It finds the Delta values that meet requriements stated below, under the conditions provided, and prints the output to a text file.
 %
-% e.g.    delta_required = FindReqdDelta(1e-3,-1,3,'xyz',1e10,1e13,'P(3->2)DC2',1)
-%         refers to find the Delta required within 1e10-1e13 (3 decimal places) for -xyz using DC2 the 1st time
+% e.g.    delta_required = FindReqdDelta(1e-3,-1,3,'xyz',1e10,1e13,1,'P(3->2)DC2',1)
+%         refers to find the Delta required within 1e10-1e13 (3 decimal places) for -xyz using DC2 for the 1st time
 
 if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % test all 27 cubic terms
   delta_required = zeros(7,27); n_combination = 1;
   Op{1} = 'x'; Op{2} = 'y'; Op{3} = 'z';   % Op{:} is the array of operators
 
   if coefficient == -1
-  FileName = strcat(input_choice,'_','negative','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+    if number_of_eigenvalues == 1         % only compute ground eigenvalues and eigenvectors
+      FileName = strcat('ground','_',input_choice,'_','negative','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+      delta_required = zeros(2,27);
+    elseif number_of_eigenvalues == 2     % compute ground and first excited eigenvalues and eigenvectors
+      FileName = strcat('1st_excited','_',input_choice,'_','negative','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+      delta_required = zeros(4,27);
+    else
+      FileName = strcat(input_choice,'_','negative','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+      delta_required = zeros(7,27);
+    end
   else
-  FileName = strcat(input_choice,'_','positive','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+    if number_of_eigenvalues == 1
+      FileName = strcat('ground','_',input_choice,'_','positive','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+      delta_required = zeros(2,27);
+    elseif number_of_eigenvalues == 2     % compute ground and first excited eigenvalues and eigenvectors
+      FileName = strcat('1st_excited','_',input_choice,'_','positive','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+      delta_required = zeros(4,27);
+    else
+      FileName = strcat(input_choice,'_','positive','_',name_of_quadratization,'_',num2str(tol,'%1.0e'),'_',num2str(test_times),'.txt');
+      delta_required = zeros(7,27);
+    end
   end
+
 
   for s1 = 1:3
   for s2 = 1:3
@@ -43,7 +62,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
     m = log2(size(RHS,2)) - n;             % the number of auxiliary qubits
-    [V_RHS,E_RHS] = eig(RHS);
+    [V_RHS,E_RHS] = eigs(RHS,number_of_eigenvalues,'smallestreal');    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
     [V_LHS,E_LHS] = eig(LHS);
     [E_RHS,index] = sort(diag(E_RHS));
     V_RHS = V_RHS(:,index);
@@ -65,7 +84,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
         sorted_L = [];
         sorted_R = [];
       end
-      if (sum( abs(E_LHS(1:2^m) - E_RHS(1)) < tol ) == 2^m)
+      if (number_of_eigenvalues >= 1) && (sum( abs(E_LHS(1:2^m) - E_RHS(1)) < tol ) == 2^m)
           if (delta_required(1,n_combination) == 0)
               delta_required(1,n_combination) = floor(log10(Delta));  % value of Delta that let ground energy match
           end
@@ -73,7 +92,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
               delta_required(2,n_combination) = floor(log10(Delta));  % value of Delta that let ground state match
           end
 
-          if (sum( abs(E_LHS((2^m + 1):2^(m+1)) - E_RHS(2)) < tol ) == 2^m)
+          if (number_of_eigenvalues >= 2) && (sum( abs(E_LHS((2^m + 1):2^(m+1)) - E_RHS(2)) < tol ) == 2^m)
               if (delta_required(3,n_combination) == 0)
                   delta_required(3,n_combination) = floor(log10(Delta));  % value of Delta that let first excited energy match
               end
@@ -83,7 +102,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
               end
           end
 
-          if (numel(unique(ind_evals_R)) == 2^n)
+          if (number_of_eigenvalues > 2) && (numel(unique(ind_evals_R)) == 2^n)
               if (delta_required(5,n_combination) == 0)
                 delta_required(5,n_combination) = floor(log10(Delta));   % value of Delta that let all 8 energies match
               end
@@ -93,13 +112,14 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
               end
           end
       end
-      if ne(delta_required(5,n_combination),0) && (delta_required(7,n_combination) == 0) && (numel(unique(ind_evals_R)) == 0)
+      if (number_of_eigenvalues > 2) && ne(delta_required(5,n_combination),0) && (delta_required(7,n_combination) == 0) && (numel(unique(ind_evals_R)) == 0)
           delta_required(7,n_combination) = floor(log10(Delta));  % value of Delta that is too large to keep energies matching
       end
     end
   end
   if (Delta - checkpoint) >= 10^(floor(log10(Delta))-(decimal_place - 2))    % update the output file and the checkpoint
-      dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');   % the delta required
+      dlmwrite(FileName,delta_required','delimiter','\t');   % the delta required
+      dlmwrite(FileName,' ','-append');       % separate line
       dlmwrite(FileName,Delta,'-append');     % largest Delta tested
       checkpoint = Delta;
   end
@@ -110,8 +130,10 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   end
   end
   end
-  dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');
-  dlmwrite(FileName,maxDelta,'-append','delimiter','\t');     % range of Delta tested
+  dlmwrite(FileName,delta_required','delimiter','\t');
+  dlmwrite(FileName,' ','-append');                        % separate line
+  dlmwrite(FileName,floor(log10(minDelta)),'-append');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(maxDelta)),'-append');     % range of Delta tested
 
 elseif strcmp(input_choice,'all_quartics')
   delta_required = zeros(7,81); n_combination = 1;
@@ -156,10 +178,12 @@ elseif strcmp(input_choice,'all_quartics')
   [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
     m = log2(size(RHS,2)) - n;             % the number of auxiliary qubits
-    [V_RHS,E_RHS] = eig(RHS);
+    [V_RHS,E_RHS] = eigs(RHS,number_of_eigenvalues,'smallestreal');    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
     [V_LHS,E_LHS] = eig(LHS);
-    [E_RHS,index] = sort(diag(E_RHS)); V_RHS = V_RHS(:,index);
-    [E_LHS,index] = sort(diag(E_LHS)); V_LHS = V_LHS(:,index);
+    [E_RHS,index] = sort(diag(E_RHS));
+    V_RHS = V_RHS(:,index);
+    [E_LHS,index] = sort(diag(E_LHS));
+    V_LHS = V_LHS(:,index);
     [ind_evals_L, ind_evals_R] = find( abs(E_RHS'-E_LHS) < tol );              % indices of LHS and RHS where eigenvalues match within tol
     if isempty(ind_evals_L) == 0        % matching eigenvalues exist
       L = V_LHS(:,ind_evals_L);                                                   % L = LHS eigenvectors for eigenvalues matching RHS
@@ -223,7 +247,8 @@ elseif strcmp(input_choice,'all_quartics')
   end
   end
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');
-  dlmwrite(FileName,maxDelta,'-append','delimiter','\t');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(minDelta)),'-append','delimiter','\t');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(maxDelta)),'-append','delimiter','\t');     % range of Delta tested
 
 elseif length(input_choice) == 3        % test a single term
   delta_required = zeros(7,1); operators = input_choice; n_combination = 1;   % to match the description in 'all_cubics' case
@@ -256,7 +281,7 @@ elseif length(input_choice) == 3        % test a single term
   Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
   [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
-    [V_RHS,E_RHS] = eig(RHS);
+    [V_RHS,E_RHS] = eigs(RHS,number_of_eigenvalues,'smallestreal');    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
     [V_LHS,E_LHS] = eig(LHS);
     [E_RHS,index] = sort(diag(E_RHS)); V_RHS = V_RHS(:,index);
     [E_LHS,index] = sort(diag(E_LHS)); V_LHS = V_LHS(:,index);
@@ -319,7 +344,8 @@ elseif length(input_choice) == 3        % test a single term
   ind = find(delta_required(:,n_combination) == 0);
   delta_required(ind,n_combination) = Inf;
   dlmwrite(FileName,delta_required','delimiter','\t','newline','unix');
-  dlmwrite(FileName,maxDelta,'-append','delimiter','\t');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(minDelta)),'-append','delimiter','\t');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(maxDelta)),'-append','delimiter','\t');     % range of Delta tested
   dlmwrite(FileName,input_choice,'-append');     % input choice
 
 else
