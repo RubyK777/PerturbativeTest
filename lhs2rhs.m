@@ -17,15 +17,14 @@ function [LHS, RHS] = lhs2rhs(coefficient,operators,Delta,name_of_quadratization
 
         for ind = 1:n
             if operators(ind) == 'x'
-                S{ind} = kron(kron(eye(2^(ind-1)),x),eye(2^(n+3-ind)));
+                S{ind} = kron(kron(eye(2^(ind-1)),x),eye(2^(n+1-ind)));
             elseif operators(ind) == 'y'
-                S{ind} = kron(kron(eye(2^(ind-1)),y),eye(2^(n+3-ind)));
+                S{ind} = kron(kron(eye(2^(ind-1)),y),eye(2^(n+1-ind)));
             elseif operators(ind) == 'z'
-                S{ind} = kron(kron(eye(2^(ind-1)),z),eye(2^(n+3-ind)));
+                S{ind} = kron(kron(eye(2^(ind-1)),z),eye(2^(n+1-ind)));
             end
         end
-        xa = kron(eye(8),x);
-        za = kron(eye(8),z);
+        xa = kron(eye(8),x); za = kron(eye(8),z);
 
         alpha = (1/2)*Delta;
         alpha_s = coefficient*((1/4)*(Delta^(2/3)) - 1);
@@ -35,8 +34,13 @@ function [LHS, RHS] = lhs2rhs(coefficient,operators,Delta,name_of_quadratization
         alpha_sx = Delta^(2/3);
 
         LHS = coefficient*S{1}*S{2}*S{3};
-        RHS = alpha*eye(16) + alpha_s*S{3} + alpha_sx*xa*S{1} + alpha_sx*xa*S{2} + alpha_sz*za*S{3} + alpha_z*za + 2*alpha_ss*eye(16) + 2*alpha_ss*S{1}*S{2};        % we only use x,y,z here, for which S^2 = I
-        % original RHS = alpha*eye(16) + alpha_s*S{3} + alpha_sx*xa*S{1} + alpha_sx*xa*S{2} + alpha_sz*za*S{3} + alpha_z*za + alpha_ss*((S{1} + S{2})^2);
+        RHS1 = alpha*eye(16);
+        RHS2 = alpha_s*S{3};
+        RHS3 = alpha_z*za;
+        RHS4 = alpha_ss*((S{1} + S{2})^2);
+        RHS5 = alpha_sx*(S{1}*xa + S{2}*xa);
+        RHS6 = alpha_sz*za*S{3};
+        RHS = RHS1 + RHS2 + RHS3 + RHS4 + RHS5 + RHS6;
 
         elseif strcmp(name_of_quadratization, 'P(3->2)-KKR') || strcmp(name_of_quadratization, 'P(3->2)KKR')
             assert(n == 3, 'P(3->2)-KKR requires a 3-local term, please only give 3 operators.');
