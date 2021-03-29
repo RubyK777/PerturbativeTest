@@ -247,10 +247,20 @@ function [LHS, RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization)
         RHS = alpha*( (I - za_11*za_1) ) + alpha*( (I - za_1) ) + alpha*( (I - za_1*za_1) ) ...
           + beta*( (H_1j - H_2j)*xa_11 ) + coefficient*I;
 
-    elseif strcmp(name_of_quadratization, 'PD-JF')    
+    elseif strcmp(name_of_quadratization, 'PD-JF')
         assert(n >= 3, 'PD-JF requires at least a 3-local term, please give at least 3 terms.');
 
-        Z_total = NeededM{1}; X_total = NeededM{2}; I = NeededM{3};
+        Z_total = NeededM{1}; XA = NeededM{2}; I = NeededM{3};
+
+        for ind = 1:n
+              Xcouple{ind} = S{ind}*XA{ind};
+        end
+
+        Xcouple{1} = Xcouple{1}*coefficient;
+        X_total = 0*I;
+        for k = 1:n
+            X_total = X_total + Xcouple{k};
+        end
 
         LHS = NeededM{end};
         RHS = (1/2)*Z_total + (1/Delta)*(X_total) - coefficient*I;
@@ -271,7 +281,16 @@ function [LHS, RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization)
     elseif strcmp(name_of_quadratization, 'PD-CK')
         assert(n >= 3, 'PD-CK requires at least a 3-local term, please give at least 3 terms.');
 
-        Z_total = NeededM{1}; X_total = NeededM{2}; I = NeededM{3};
+        Z_total = NeededM{1}; XA = NeededM{2}; I = NeededM{3};
+
+
+        for ind = 1:n
+            Xcouple{ind} = S{ind}*XA{ind};
+        end
+        X_total = 0*I;
+        for k = 1:n
+            X_total = X_total + Xcouple{k};
+        end
 
         LHS = NeededM{end};
         RHS = (Delta/(2*(n - 1)))*(Z_total) + (coefficient^(1/n))*(X_total) - coefficient*I;

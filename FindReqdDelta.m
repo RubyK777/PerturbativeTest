@@ -40,7 +40,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   for s3 = 1:3
   operators = strcat(Op{s1},Op{s2},Op{s3});
 
-  % calculate S1,S2,S3 outside of the function lhs2rhs
+  % calculate S1,S2,S3 outside of the function lhsrhs
     x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1];
     S = cell(n);
     [m,NeededM] = GetAuxNum(size(operators,2),name_of_quadratization);                %  m is the number of auxiliary qubits nad A is the array of auxiliary operators
@@ -170,7 +170,7 @@ elseif strcmp(input_choice,'all_quartics')
   for s4 = 1:3
   operators = strcat(Op{s1},Op{s2},Op{s3},Op{s4});
 
-  % calculate S1,S2,S3 outside of the function lhs2rhs
+  % calculate S1,S2,S3 outside of the function lhsrhs
     x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1];
     S = cell(n);
     [m,NeededM] = GetAuxNum(size(operators,2),name_of_quadratization);                %  m is the number of auxiliary qubits nad A is the array of auxiliary operators
@@ -299,7 +299,7 @@ elseif length(input_choice) == 3        % test a single term
     end
   end
 
-  % calculate S1,S2,S3 outside of the function lhs2rhs
+  % calculate S1,S2,S3 outside of the function lhsrhs
     x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1];
     S = cell(n);
     [m,NeededM] = GetAuxNum(size(operators,2),name_of_quadratization);                %  m is the number of auxiliary qubits nad A is the array of auxiliary operators
@@ -395,7 +395,7 @@ end
 end
 
 function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_quadratization)     % known from Book About Quadratization
-% need to be updated whenever lhs2rhs.m gets updated
+% need to be updated whenever lhsrhs.m gets updated
     x = [0 1 ; 1 0]; y = [0 -1i ; 1i 0]; z = [1 0 ; 0 -1];
     n = number_of_logical;
 
@@ -488,7 +488,7 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
           ZA{ind} = kron(kron(eye(2^(n-1+ind)),z),eye(2^(n-ind)));
           XA{ind} = kron(kron(eye(2^(n-1+ind)),x),eye(2^(n-ind)));
       end
-      I_size = 2^(2*n);
+      I = eye(2^(2*n));
 
       index = 0;
       for j = 2:n
@@ -498,22 +498,13 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
           end
       end
 
-      for ind = 1:n
-          Xcouple{ind} = S{ind}*XA{ind};
-      end
-      Xcouple{1} = Xcouple{1}*coefficient;
-
-      Z_total = index*eye(I_size); X_total = 0*eye(I_size);
+      Z_total = index*I;
       for k = 1:index
           Z_total = Z_total - Zcouple{k};
       end
 
-      for k = 1:n
-          X_total = X_total + Xcouple{k};
-      end
-
       NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
-      NeededM{1} = Z_total; NeededM{2} = X_total; NeededM{3} = I;
+      NeededM{1} = Z_total; NeededM{2} = XA; NeededM{3} = I;
 
     elseif strcmp(name_of_quadratization, 'P(3->2)-CBBK2') || strcmp(name_of_quadratization, 'P(3->2)CBBK2')
       number_of_auxiliary = 1;
@@ -531,7 +522,7 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
           ZA{ind} = kron(kron(eye(2^(n-1+ind)),z),eye(2^(n-ind)));
           XA{ind} = kron(kron(eye(2^(n-1+ind)),x),eye(2^(n-ind)));
       end
-      I_size = 2^(2*n);
+      I = eye(2^(2*n));
       index = 0;
       for j = 2:n
           for i = 1:j - 1
@@ -539,22 +530,13 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
               Zcouple{index} = ZA{i}*ZA{j};
           end
       end
-
-      for ind = 1:n
-          Xcouple{ind} = S{ind}*XA{ind};
-      end
-
-      Z_total = index*eye(I_size); X_total = 0*eye(I_size);
+      Z_total = index*I;
       for k = 1:index
           Z_total = Z_total - Zcouple{k};
       end
 
-      for k = 1:n
-          X_total = X_total + Xcouple{k};
-      end
-
       NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
-      NeededM{1} = Z_total; NeededM{2} = X_total; NeededM{3} = I;
+      NeededM{1} = Z_total; NeededM{2} = XA; NeededM{3} = I;
 
     else
         disp('cannot find this method');
