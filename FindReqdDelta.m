@@ -62,7 +62,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
     m = log2(size(RHS,2)) - n;             % the number of auxiliary qubits
-    [V_RHS,E_RHS] = eigs(RHS,number_of_eigenvalues,'smallestreal');    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
+    [V_RHS,E_RHS] = eig(RHS);    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
     [V_LHS,E_LHS] = eig(LHS);
     [E_RHS,index] = sort(diag(E_RHS));
     V_RHS = V_RHS(:,index);
@@ -196,7 +196,7 @@ elseif strcmp(input_choice,'all_quartics')
   [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
     m = log2(size(RHS,2)) - n;             % the number of auxiliary qubits
-    [V_RHS,E_RHS] = eigs(RHS,number_of_eigenvalues,'smallestreal');    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
+    [V_RHS,E_RHS] = eig(RHS);    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
     [V_LHS,E_LHS] = eig(LHS);
     [E_RHS,index] = sort(diag(E_RHS));
     V_RHS = V_RHS(:,index);
@@ -320,7 +320,7 @@ elseif length(input_choice) == 3        % test a single term
   Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
   [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
-    [V_RHS,E_RHS] = eigs(RHS,number_of_eigenvalues,'smallestreal');    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
+    [V_RHS,E_RHS] = eig(RHS);    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
     [V_LHS,E_LHS] = eig(LHS);
     [E_RHS,index] = sort(diag(E_RHS)); V_RHS = V_RHS(:,index);
     [E_LHS,index] = sort(diag(E_LHS)); V_LHS = V_LHS(:,index);
@@ -481,6 +481,81 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
 
         NeededM = cell(7,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
         NeededM{1} = za_11; NeededM{2} = xa_11; NeededM{3} = za_1; NeededM{4} = I;
+
+    elseif strcmp(name_of_quadratization, 'PD-JF')
+      number_of_auxiliary = n;
+      for ind = 1:n
+          ZA{ind} = kron(kron(eye(2^(n-1+ind)),z),eye(2^(n-ind)));
+          XA{ind} = kron(kron(eye(2^(n-1+ind)),x),eye(2^(n-ind)));
+      end
+      I_size = 2^(2*n);
+
+      index = 0;
+      for j = 2:n
+          for i = 1:j - 1
+              index = index + 1;
+              Zcouple{index} = ZA{i}*ZA{j};
+          end
+      end
+
+      for ind = 1:n
+          Xcouple{ind} = S{ind}*XA{ind};
+      end
+      Xcouple{1} = Xcouple{1}*coefficient;
+
+      Z_total = index*eye(I_size); X_total = 0*eye(I_size);
+      for k = 1:index
+          Z_total = Z_total - Zcouple{k};
+      end
+
+      for k = 1:n
+          X_total = X_total + Xcouple{k};
+      end
+
+      NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+      NeededM{1} = Z_total; NeededM{2} = X_total; NeededM{3} = I;
+
+    elseif strcmp(name_of_quadratization, 'P(3->2)-CBBK2') || strcmp(name_of_quadratization, 'P(3->2)CBBK2')
+      number_of_auxiliary = 1;
+
+      za = kron(eye(8),z);
+      xa = kron(eye(8),x);
+      I = eye(16);
+      NeededM = cell(4,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+      NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
+
+    elseif strcmp(name_of_quadratization, 'PD-CK')
+      number_of_auxiliary = n;
+
+      for ind = 1:n
+          ZA{ind} = kron(kron(eye(2^(n-1+ind)),z),eye(2^(n-ind)));
+          XA{ind} = kron(kron(eye(2^(n-1+ind)),x),eye(2^(n-ind)));
+      end
+      I_size = 2^(2*n);
+      index = 0;
+      for j = 2:n
+          for i = 1:j - 1
+              index = index + 1;
+              Zcouple{index} = ZA{i}*ZA{j};
+          end
+      end
+
+      for ind = 1:n
+          Xcouple{ind} = S{ind}*XA{ind};
+      end
+
+      Z_total = index*eye(I_size); X_total = 0*eye(I_size);
+      for k = 1:index
+          Z_total = Z_total - Zcouple{k};
+      end
+
+      for k = 1:n
+          X_total = X_total + Xcouple{k};
+      end
+
+      NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+      NeededM{1} = Z_total; NeededM{2} = X_total; NeededM{3} = I;
+
     else
         disp('cannot find this method');
         number_of_auxiliary = nan;
