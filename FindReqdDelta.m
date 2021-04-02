@@ -53,7 +53,11 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
             S{ind} = kron(kron(eye(2^(ind-1)),z),eye(2^(n+m-ind)));
         end
     end
-  LHS = coefficient*S{1}*S{2}*S{3};
+  A = S{1}*S{2};
+  B = S{3};
+  LHS = coefficient*A*B;
+  NeededM{end - 2} = A;
+  NeededM{end - 1} = B;
   NeededM{end} = LHS;              % save LHS in the last cell of NeededM
   Delta = minDelta;
   checkpoint = minDelta;
@@ -402,7 +406,7 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
     if strcmp(name_of_quadratization, 'P(3->2)-DC2') || strcmp(name_of_quadratization, 'P(3->2)DC2')
         number_of_auxiliary = 1;
         xa = kron(eye(8),x); za = kron(eye(8),z); I = eye(2^4);
-        NeededM = cell(4,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
         NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
 
     elseif strcmp(name_of_quadratization, 'P(3->2)-KKR') || strcmp(name_of_quadratization, 'P(3->2)KKR')
@@ -410,7 +414,7 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
         xa1 = kron(kron(eye(8),x),eye(4)); xa2 = kron(kron(eye(16),x),eye(2)); xa3 = kron(eye(32),x);
         za1 = kron(kron(eye(8),z),eye(4)); za2 = kron(kron(eye(16),z),eye(2)); za3 = kron(eye(32),z);
         I = eye(2^6);
-        NeededM = cell(8,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM = cell(10,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
         NeededM{1} = xa1; NeededM{2} = xa2; NeededM{3} = xa3;
         NeededM{4} = za1; NeededM{5} = za2; NeededM{6} = za3; NeededM{7} = I;
 
@@ -419,7 +423,7 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
         xa1 = kron(kron(eye(8),x),eye(4)); xa2 = kron(kron(eye(16),x),eye(2)); xa3 = kron(eye(32),x);
         za1 = kron(kron(eye(8),z),eye(4)); za2 = kron(kron(eye(16),z),eye(2)); za3 = kron(eye(32),z);
         I = eye(2^6);
-        NeededM = cell(8,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM = cell(10,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
         NeededM{1} = xa1; NeededM{2} = xa2; NeededM{3} = xa3;
         NeededM{4} = za1; NeededM{5} = za2; NeededM{6} = za3; NeededM{7} = I;
 
@@ -428,14 +432,14 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
         xa1 = kron(kron(eye(8),x),eye(4)); xa2 = kron(kron(eye(16),x),eye(2)); xa3 = kron(eye(32),x);
         za1 = kron(kron(eye(8),z),eye(4)); za2 = kron(kron(eye(16),z),eye(2)); za3 = kron(eye(32),z);
         I = eye(2^6);
-        NeededM = cell(8,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM = cell(10,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
         NeededM{1} = xa1; NeededM{2} = xa2; NeededM{3} = xa3;
         NeededM{4} = za1; NeededM{5} = za2; NeededM{6} = za3; NeededM{7} = I;
 
    elseif strcmp(name_of_quadratization, 'ZZZ-TI-CBBK')
         number_of_auxiliary = 1;
         xa = kron(eye(8),x); za = kron(eye(8),z); I = eye(2^4);
-        NeededM = cell(4,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
         NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
 
     elseif strcmp(name_of_quadratization, 'PSD-CBBK')
@@ -453,13 +457,13 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
     elseif strcmp(name_of_quadratization, 'P(3->2)CBBK') || strcmp(name_of_quadratization, 'P(3->2)-CBBK')
          number_of_auxiliary = 1;
          za = kron(eye(8),z); xa = kron(eye(8),x); I = eye(16);
-         NeededM = cell(4,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+         NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
          NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
 
     elseif strcmp(name_of_quadratization, 'P(3->2)-OT') || strcmp(name_of_quadratization, 'P(3->2)OT')
         number_of_auxiliary = 1;
         xa = kron(eye(8),x); za = kron(eye(8),z); I = eye(16);
-        NeededM = cell(4,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+        NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
         NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
 
     elseif strcmp(name_of_quadratization, 'P1B1-CBBK')
@@ -512,7 +516,7 @@ function [number_of_auxiliary,NeededM] = GetAuxNum(number_of_logical,name_of_qua
       za = kron(eye(8),z);
       xa = kron(eye(8),x);
       I = eye(16);
-      NeededM = cell(4,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
+      NeededM = cell(6,1);                                    % contains the auxiliary matrices, identity matrix needed and LHS in the last cell
       NeededM{1} = xa; NeededM{2} = za; NeededM{3} = I;
 
     elseif strcmp(name_of_quadratization, 'PD-CK')
