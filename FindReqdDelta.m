@@ -62,7 +62,7 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   Delta = minDelta;
   checkpoint = minDelta;
   while Delta <= maxDelta
-  Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
+  Delta = Delta + 10^(floor(log10(abs(Delta)))-decimal_place);
   [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
     m = log2(size(RHS,2)) - n;             % the number of auxiliary qubits
@@ -90,38 +90,38 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
       end
       if (number_of_eigenvalues >= 1) && (sum( abs(E_LHS(1:2^m) - E_RHS(1)) < tol ) == 2^m)
           if (delta_required(1,n_combination) == 0)
-              delta_required(1,n_combination) = floor(log10(Delta));  % value of Delta that let ground energy match
+              delta_required(1,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let ground energy match
           end
           if (isempty(ind_evecs) == 0) && (delta_required(2,n_combination) == 0)
-              delta_required(2,n_combination) = floor(log10(Delta));  % value of Delta that let ground state match
+              delta_required(2,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let ground state match
           end
 
           if (number_of_eigenvalues >= 2) && (sum( abs(E_LHS((2^m + 1):2^(m+1)) - E_RHS(2)) < tol ) == 2^m)
               if (delta_required(3,n_combination) == 0)
-                  delta_required(3,n_combination) = floor(log10(Delta));  % value of Delta that let first excited energy match
+                  delta_required(3,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let first excited energy match
               end
 
               if (size(sorted_L,2) >= 2) && (delta_required(4,n_combination) == 0)
-                  delta_required(4,n_combination) = floor(log10(Delta));   % value of Delta that let first excited state match
+                  delta_required(4,n_combination) = floor(log10(abs(Delta)));   % value of Delta that let first excited state match
               end
           end
 
           if (number_of_eigenvalues > 2) && (numel(unique(ind_evals_R)) == 2^n)
               if (delta_required(5,n_combination) == 0)
-                delta_required(5,n_combination) = floor(log10(Delta));   % value of Delta that let all 8 energies match
+                delta_required(5,n_combination) = floor(log10(abs(Delta)));   % value of Delta that let all 8 energies match
               end
 
               if isequal(size(sorted_L,2),size(sorted_R,2),2^n) && (delta_required(6,n_combination) == 0)
-                  delta_required(6,n_combination) = floor(log10(Delta));  % value of Delta that let all 8 states match
+                  delta_required(6,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let all 8 states match
               end
           end
       end
       if (number_of_eigenvalues > 2) && ne(delta_required(5,n_combination),0) && (delta_required(7,n_combination) == 0) && (numel(unique(ind_evals_R)) == 0)
-          delta_required(7,n_combination) = floor(log10(Delta));  % value of Delta that is too large to keep energies matching
+          delta_required(7,n_combination) = floor(log10(abs(Delta)));  % value of Delta that is too large to keep energies matching
       end
     end
   end
-  if (Delta - checkpoint) >= 10^(floor(log10(Delta))-(decimal_place - 2))    % update the output file and the checkpoint
+  if (Delta - checkpoint) >= 10^(floor(log10(abs(Delta)))-(decimal_place - 2))    % update the output file and the checkpoint
       dlmwrite(FileName,delta_required','delimiter','\t');   % the delta required
       dlmwrite(FileName,' ','-append');       % separate line
       dlmwrite(FileName,Delta,'-append');     % largest Delta tested
@@ -136,8 +136,8 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   end
   dlmwrite(FileName,delta_required','delimiter','\t');
   dlmwrite(FileName,' ','-append');                        % separate line
-  dlmwrite(FileName,floor(log10(minDelta)),'-append');     % range of Delta tested
-  dlmwrite(FileName,floor(log10(maxDelta)),'-append');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(abs(minDelta))),'-append');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(abs(maxDelta))),'-append');     % range of Delta tested
 
 elseif strcmp(input_choice,'all_quartics')
   n = 4;        % the number of logical operators
@@ -196,7 +196,7 @@ elseif strcmp(input_choice,'all_quartics')
   Delta = minDelta;
   checkpoint = minDelta;
   while Delta <= maxDelta
-  Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
+  Delta = Delta + 10^(floor(log10(abs(Delta)))-decimal_place);
   [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
     m = log2(size(RHS,2)) - n;             % the number of auxiliary qubits
@@ -224,38 +224,38 @@ elseif strcmp(input_choice,'all_quartics')
       end
       if (number_of_eigenvalues >= 1) && (sum( abs(E_LHS(1:2^m) - E_RHS(1)) < tol ) == 2^m)
           if (delta_required(1,n_combination) == 0)
-              delta_required(1,n_combination) = floor(log10(Delta));  % value of Delta that let ground energy match
+              delta_required(1,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let ground energy match
           end
           if (isempty(ind_evecs) == 0) && (delta_required(2,n_combination) == 0)
-              delta_required(2,n_combination) = floor(log10(Delta));  % value of Delta that let ground state match
+              delta_required(2,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let ground state match
           end
 
           if (number_of_eigenvalues >= 2) && (sum( abs(E_LHS((2^m + 1):2^(m+1)) - E_RHS(2)) < tol ) == 2^m)
               if (delta_required(3,n_combination) == 0)
-                  delta_required(3,n_combination) = floor(log10(Delta));  % value of Delta that let first excited energy match
+                  delta_required(3,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let first excited energy match
               end
 
               if (size(sorted_L,2) >= 2) && (delta_required(4,n_combination) == 0)
-                  delta_required(4,n_combination) = floor(log10(Delta));   % value of Delta that let first excited state match
+                  delta_required(4,n_combination) = floor(log10(abs(Delta)));   % value of Delta that let first excited state match
               end
           end
 
           if (number_of_eigenvalues > 2) && (numel(unique(ind_evals_R)) == 2^n)
               if (delta_required(5,n_combination) == 0)
-                delta_required(5,n_combination) = floor(log10(Delta));   % value of Delta that let all 16 energies match
+                delta_required(5,n_combination) = floor(log10(abs(Delta)));   % value of Delta that let all 16 energies match
               end
 
               if isequal(size(sorted_L,2),size(sorted_R,2),2^n) && (delta_required(6,n_combination) == 0)
-                  delta_required(6,n_combination) = floor(log10(Delta));  % value of Delta that let all 16 states match
+                  delta_required(6,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let all 16 states match
               end
           end
       end
       if (number_of_eigenvalues > 2) && ne(delta_required(5,n_combination),0) && (delta_required(7,n_combination) == 0) && (numel(unique(ind_evals_R)) == 0)
-          delta_required(7,n_combination) = floor(log10(Delta));  % value of Delta that is too large to keep energies matching
+          delta_required(7,n_combination) = floor(log10(abs(Delta)));  % value of Delta that is too large to keep energies matching
       end
     end
   end
-  if (Delta - checkpoint) >= 10^(floor(log10(Delta))-(decimal_place - 2))    % update the output file and the checkpoint
+  if (Delta - checkpoint) >= 10^(floor(log10(abs(Delta)))-(decimal_place - 2))    % update the output file and the checkpoint
       dlmwrite(FileName,delta_required','delimiter','\t');   % the delta required
       dlmwrite(FileName,' ','-append');       % separate line
       dlmwrite(FileName,Delta,'-append');     % largest Delta tested
@@ -271,8 +271,8 @@ elseif strcmp(input_choice,'all_quartics')
   end
   dlmwrite(FileName,delta_required','delimiter','\t');
   dlmwrite(FileName,' ','-append');                        % separate line
-  dlmwrite(FileName,floor(log10(minDelta)),'-append');     % range of Delta tested
-  dlmwrite(FileName,floor(log10(maxDelta)),'-append');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(abs(minDelta))),'-append');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(abs(maxDelta))),'-append');     % range of Delta tested
 
 elseif length(input_choice) == 3        % test a single term
   n = 3;        % the number of logical operators
@@ -321,7 +321,7 @@ elseif length(input_choice) == 3        % test a single term
   Delta = minDelta;
   checkpoint = minDelta;
   while Delta <= maxDelta
-  Delta = Delta + 10^(floor(log10(Delta))-decimal_place);
+  Delta = Delta + 10^(floor(log10(abs(Delta)))-decimal_place);
   [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
     [V_RHS,E_RHS] = eig(RHS);    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
@@ -346,38 +346,38 @@ elseif length(input_choice) == 3        % test a single term
       end
       if (number_of_eigenvalues >= 1) && (sum( abs(E_LHS(1:2^m) - E_RHS(1)) < tol ) == 2^m)
           if (delta_required(1,n_combination) == 0)
-              delta_required(1,n_combination) = floor(log10(Delta));  % value of Delta that let ground energy match
+              delta_required(1,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let ground energy match
           end
           if (isempty(ind_evecs) == 0) && (delta_required(2,n_combination) == 0)
-              delta_required(2,n_combination) = floor(log10(Delta));  % value of Delta that let ground state match
+              delta_required(2,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let ground state match
           end
 
           if (number_of_eigenvalues >= 2) && (sum( abs(E_LHS((2^m + 1):2^(m+1)) - E_RHS(2)) < tol ) == 2^m)
               if (delta_required(3,n_combination) == 0)
-                  delta_required(3,n_combination) = floor(log10(Delta));  % value of Delta that let first excited energy match
+                  delta_required(3,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let first excited energy match
               end
 
               if (size(sorted_L,2) >= 2) && (delta_required(4,n_combination) == 0)
-                  delta_required(4,n_combination) = floor(log10(Delta));   % value of Delta that let first excited state match
+                  delta_required(4,n_combination) = floor(log10(abs(Delta)));   % value of Delta that let first excited state match
               end
           end
 
           if (number_of_eigenvalues > 2) && (numel(unique(ind_evals_R)) == 2^n)
               if (delta_required(5,n_combination) == 0)
-                delta_required(5,n_combination) = floor(log10(Delta));   % value of Delta that let all 8 energies match
+                delta_required(5,n_combination) = floor(log10(abs(Delta)));   % value of Delta that let all 8 energies match
               end
 
               if isequal(size(sorted_L,2),size(sorted_R,2),2^n) && (delta_required(6,n_combination) == 0)
-                  delta_required(6,n_combination) = floor(log10(Delta));  % value of Delta that let all 8 states match
+                  delta_required(6,n_combination) = floor(log10(abs(Delta)));  % value of Delta that let all 8 states match
               end
           end
       end
       if (number_of_eigenvalues > 2) && ne(delta_required(5,n_combination),0) && (delta_required(7,n_combination) == 0) && (numel(unique(ind_evals_R)) == 0)
-          delta_required(7,n_combination) = floor(log10(Delta));  % value of Delta that is too large to keep energies matching
+          delta_required(7,n_combination) = floor(log10(abs(Delta)));  % value of Delta that is too large to keep energies matching
       end
     end
   end
-  if (Delta - checkpoint) >= 10^(floor(log10(Delta))-(decimal_place - 2))    % update the output file and the checkpoint
+  if (Delta - checkpoint) >= 10^(floor(log10(abs(Delta)))-(decimal_place - 2))    % update the output file and the checkpoint
       dlmwrite(FileName,delta_required','delimiter','\t');   % the delta required
       dlmwrite(FileName,' ','-append');       % separate line
       dlmwrite(FileName,Delta,'-append');     % largest Delta tested
@@ -389,8 +389,8 @@ elseif length(input_choice) == 3        % test a single term
   n_combination = n_combination + 1;
   dlmwrite(FileName,delta_required','delimiter','\t');
   dlmwrite(FileName,' ','-append');                        % separate line
-  dlmwrite(FileName,floor(log10(minDelta)),'-append');     % range of Delta tested
-  dlmwrite(FileName,floor(log10(maxDelta)),'-append');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(abs(minDelta))),'-append');     % range of Delta tested
+  dlmwrite(FileName,floor(log10(abs(maxDelta))),'-append');     % range of Delta tested
 
 else
   disp("Invalid Input");
