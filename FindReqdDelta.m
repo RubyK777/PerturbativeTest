@@ -59,13 +59,28 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
   NeededM{end - 2} = A;
   NeededM{end - 1} = B;
   NeededM{end} = LHS;              % save LHS in the last cell of NeededM
+
+  ANAL_E_LHS = 1;
+  for ind = 1:n
+      if operators(ind) == 'x'
+          ANAL_E_LHS = sort(kron(ANAL_E_LHS,eig(x)));
+      elseif operators(ind) == 'y'
+          ANAL_E_LHS = sort(kron(ANAL_E_LHS,eig(y)));
+      elseif operators(ind) == 'z'
+          ANAL_E_LHS = sort(kron(ANAL_E_LHS,eig(z)));
+      end
+  end
+  for ind = 1:m
+      ANAL_E_LHS = kron(ANAL_E_LHS,eig(eye(size(x,1))));
+  end
+
   Delta = minDelta;
   checkpoint = minDelta;
   while Delta <= maxDelta
   Delta = Delta + 10^(floor(log10(abs(Delta)))-decimal_place);
   [LHS,RHS] = lhsrhs(coefficient,S,NeededM,Delta,name_of_quadratization);
   if isnan(RHS) == 0
-    m = log2(size(RHS,2)) - n;             % the number of auxiliary qubits
+%    m = log2(size(RHS,2)) - n;             % the number of auxiliary qubits
     [V_RHS,E_RHS] = eig(RHS);    % only compute the smallest 'number_of_eigenvalues' eigenvalues of RHS
     [V_LHS,E_LHS] = eig(LHS);
     [E_RHS,index] = sort(diag(E_RHS));
@@ -73,6 +88,12 @@ if strcmp(input_choice,"all_cubics") || strcmp(input_choice,"27_comb")     % tes
     [E_LHS,index] = sort(diag(E_LHS));
     V_LHS = V_LHS(:,index);
     [ind_evals_L, ind_evals_R] = find( abs(E_RHS'-E_LHS) < tol );              % indices of LHS and RHS where eigenvalues match within tol
+
+    diff_E_LHS  = abs(ANAL_E_LHS - E_LHS);              % check the difference between analytic eigenvalues and results of eig()
+    if isequal(diff_E_LHS,zeros(size(E_LHS))) == 0
+    diff_E_LHS          % if analytic eigenvalues don't match with the resultd of eig, display the difference
+    end
+
     if isempty(ind_evals_L) == 0        % matching eigenvalues exist
       L = V_LHS(:,ind_evals_L);                                                   % L = LHS eigenvectors for eigenvalues matching RHS
       R = V_RHS(:,ind_evals_R);
@@ -318,6 +339,21 @@ elseif length(input_choice) == 3        % test a single term
     end
   LHS = coefficient*S{1}*S{2}*S{3};
   NeededM{end} = LHS;
+
+  ANAL_E_LHS = 1;
+  for ind = 1:n
+      if operators(ind) == 'x'
+          ANAL_E_LHS = sort(kron(ANAL_E_LHS,eig(x)));
+      elseif operators(ind) == 'y'
+          ANAL_E_LHS = sort(kron(ANAL_E_LHS,eig(y)));
+      elseif operators(ind) == 'z'
+          ANAL_E_LHS = sort(kron(ANAL_E_LHS,eig(z)));
+      end
+  end
+  for ind = 1:m
+      ANAL_E_LHS = kron(ANAL_E_LHS,eig(eye(size(x,1))));
+  end
+
   Delta = minDelta;
   checkpoint = minDelta;
   while Delta <= maxDelta
@@ -329,6 +365,9 @@ elseif length(input_choice) == 3        % test a single term
     [E_RHS,index] = sort(diag(E_RHS)); V_RHS = V_RHS(:,index);
     [E_LHS,index] = sort(diag(E_LHS)); V_LHS = V_LHS(:,index);
     [ind_evals_L, ind_evals_R] = find( abs(E_RHS'-E_LHS) < tol );              % indices of LHS and RHS where eigenvalues match within tol
+
+    diff_E_LHS  = abs(ANAL_E_LHS - E_LHS)              % check the difference between analytic eigenvalues and results of eig()
+
     if isempty(ind_evals_L) == 0        % matching eigenvalues exist
       L = V_LHS(:,ind_evals_L);                                                   % L = LHS eigenvectors for eigenvalues matching RHS
       R = V_RHS(:,ind_evals_R);
